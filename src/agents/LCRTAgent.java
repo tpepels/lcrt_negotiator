@@ -136,6 +136,9 @@ public class LCRTAgent extends Agent {
 		return action;
 	}
 	public boolean terminateCondition(List<Offer> history, double time, Offer offer) {
+		if(ru0 > lT || ru0 > getUtility(offer.getBid())) {
+			return true;
+		}
 		return false;
 	}
 
