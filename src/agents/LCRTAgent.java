@@ -18,7 +18,10 @@ public class LCRTAgent extends Agent {
 
 	@Override
 	public Action chooseAction() {
-		//
+		for(Offer offer : history){
+			setLambdaT(timeline.getTime());
+			
+		}
 		return null;
 	}
 
