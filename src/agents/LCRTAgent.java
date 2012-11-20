@@ -18,7 +18,7 @@ public class LCRTAgent extends Agent {
 
 	private ArrayList<Offer> history = new ArrayList<Offer>();
 	private double lambda0 = .5; // Lambda needs an initial value
-	private double lambda = .0, lambdaT = 0; // Acceptance treshold of agent at time t
+	private double lambda = .0, lambdaT = 0, lT = 0; // Acceptance treshold of agent at time t
 	private double delta = .8, uMax = 1, eta = 0.9; // Maximum utility
 	//
 	private double reservationValue = 0;
@@ -75,9 +75,8 @@ public class LCRTAgent extends Agent {
 	
 	@Override
 	public Action chooseAction() {
-		for (Offer offer : history) {
-			setLambdaT(timeline.getTime());
-
+		for(Offer offer : history){
+			setLT(timeline.getTime());
 		}
 		return null;
 	}
@@ -122,13 +121,12 @@ public class LCRTAgent extends Agent {
 			lambda = lambda + weight * (1 - lambda) * Math.pow(sigma, (time * gamma));
 	}
 
-	public void setLambdaT(double time) {
+	public void setLT(double time) {
 		double alpha = 1; // Linear, boulware or conceder
 		if (time < lambda) {
-			lambdaT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda))
-					* Math.pow(time / lambda, alpha);
+			lT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda)) * Math.pow(time / lambda, alpha);
 		} else {
-			lambdaT = uMax * Math.pow(delta, 1 - time);
+			lT = uMax * Math.pow(delta, 1 - time);
 		}
 	}
 }
