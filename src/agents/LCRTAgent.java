@@ -4,34 +4,112 @@ import java.util.ArrayList;
 import java.util.List;
 
 import negotiator.Agent;
+import negotiator.Bid;
 import negotiator.actions.Action;
 import negotiator.actions.Offer;
+import negotiator.issue.Issue;
+import negotiator.issue.IssueDiscrete;
+import negotiator.issue.IssueInteger;
+import negotiator.issue.IssueReal;
+import negotiator.issue.ValueInteger;
+import negotiator.issue.ValueReal;
 
 public class LCRTAgent extends Agent {
 
 	private ArrayList<Offer> history = new ArrayList<Offer>();
 	private double lambda0 = .5; // Lambda needs an initial value
-	private double lambda = .0;
-	private double lambdaT = 0; // Acceptance treshold of agent at time t
-	private double delta = .8;
-	private double uMax = 1; // Maximum utility
+	private double lambda = .0, lambdaT = 0; // Acceptance treshold of agent at time t
+	private double delta = .8, uMax = 1, eta = 0.9; // Maximum utility
+	//
+	private double reservationValue = 0;
+	//
+	private int[][] offerCounter;
+	private double[][] issueCounter;
 
+	/**
+	 * init is called when a next session starts with the same opponent.
+	 */
+	@Override
+	public void init() {
+		int numIssues = utilitySpace.getDomain().getIssues().size();
+		offerCounter = new int[numIssues][];
+		issueCounter = new double[numIssues][];
+		ArrayList<Issue> issues = utilitySpace.getDomain().getIssues();
+		int i = 0;
+		for (Issue iss : issues) {
+			switch (iss.getType()) {
+			case DISCRETE:
+				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
+				offerCounter[i] = new int[lIssueDiscrete.getNumberOfValues()];	
+				issueCounter[i] = new double[lIssueDiscrete.getNumberOfValues()];
+				break;
+			case REAL:
+				IssueReal lIssueReal = (IssueReal) iss;
+				offerCounter[i] = new int[lIssueReal.getNumberOfDiscretizationSteps()];
+				issueCounter[i] = new double[lIssueReal.getNumberOfDiscretizationSteps()];
+				break;
+			case INTEGER:
+				IssueInteger lIssueInteger = (IssueInteger) iss;
+				offerCounter[i] = new int[lIssueInteger.getUpperBound() 
+				                          - lIssueInteger.getLowerBound()];
+				issueCounter[i] = new double[lIssueInteger.getUpperBound() 
+				                          - lIssueInteger.getLowerBound()];
+				break;
+			default:
+				break;
+			}
+			i++;
+		}
+		if (utilitySpace.getReservationValue() != null)
+			reservationValue = utilitySpace.getReservationValue();
+	}
+
+	public void ReceiveMessage(Action opponentAction)
+	{
+	// Accept, EndNegotiation, IllegalAction, Offer
+	if (opponentAction instanceof Offer) {
+	history.add((Offer) opponentAction);
+	// update counters here
+	}
+	}
+	
 	@Override
 	public Action chooseAction() {
-		for(Offer offer : history){
+		for (Offer offer : history) {
 			setLambdaT(timeline.getTime());
-			
+
 		}
 		return null;
 	}
 
-	public boolean terminateCondition(List<Offer> history, double acceptThredhold, double time, Offer offer,
-			double reservation) {
+	public boolean terminateCondition(List<Offer> history, double acceptThredhold, double time,
+			Offer offer, double reservation) {
 		return false;
 	}
 
-	public boolean acceptCondition(List<Offer> history, double acceptThredhold, double time, Offer offer) {
+	public boolean acceptCondition(List<Offer> history, double acceptThredhold, double time,
+			Offer offer) {
 		return true;
+	}
+
+	public Bid nextBid(Offer oppOff) {
+		ArrayList<Issue> issues = utilitySpace.getDomain().getIssues();
+		for (Issue lIssue : issues) {
+			switch (lIssue.getType()) {
+			case DISCRETE:
+				IssueDiscrete lIssueDiscrete = (IssueDiscrete) lIssue;
+				break;
+			case REAL:
+				IssueReal lIssueReal = (IssueReal) lIssue;
+				break;
+			case INTEGER:
+				IssueInteger lIssueInteger = (IssueInteger) lIssue;
+				break;
+			default:
+				break;
+			}
+		}
+		return null;
 	}
 
 	private final double beta = 1., gamma = 1., weight = 1.;
@@ -47,7 +125,8 @@ public class LCRTAgent extends Agent {
 	public void setLambdaT(double time) {
 		double alpha = 1; // Linear, boulware or conceder
 		if (time < lambda) {
-			lambdaT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda)) * Math.pow(time / lambda, alpha);
+			lambdaT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda))
+					* Math.pow(time / lambda, alpha);
 		} else {
 			lambdaT = uMax * Math.pow(delta, 1 - time);
 		}
