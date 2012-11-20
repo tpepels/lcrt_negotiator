@@ -11,6 +11,8 @@ import negotiator.issue.Issue;
 import negotiator.issue.IssueDiscrete;
 import negotiator.issue.IssueInteger;
 import negotiator.issue.IssueReal;
+import negotiator.issue.Value;
+import negotiator.issue.ValueDiscrete;
 import negotiator.issue.ValueInteger;
 import negotiator.issue.ValueReal;
 
@@ -35,12 +37,12 @@ public class LCRTAgent extends Agent {
 		offerCounter = new int[numIssues][];
 		issueCounter = new double[numIssues][];
 		ArrayList<Issue> issues = utilitySpace.getDomain().getIssues();
-		int i = 0;
 		for (Issue iss : issues) {
+			int i = iss.getNumber() - 1;
 			switch (iss.getType()) {
 			case DISCRETE:
 				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
-				offerCounter[i] = new int[lIssueDiscrete.getNumberOfValues()];	
+				offerCounter[i] = new int[lIssueDiscrete.getNumberOfValues()];
 				issueCounter[i] = new double[lIssueDiscrete.getNumberOfValues()];
 				break;
 			case REAL:
@@ -50,32 +52,55 @@ public class LCRTAgent extends Agent {
 				break;
 			case INTEGER:
 				IssueInteger lIssueInteger = (IssueInteger) iss;
-				offerCounter[i] = new int[lIssueInteger.getUpperBound() 
-				                          - lIssueInteger.getLowerBound()];
-				issueCounter[i] = new double[lIssueInteger.getUpperBound() 
-				                          - lIssueInteger.getLowerBound()];
+				offerCounter[i] = new int[lIssueInteger.getUpperBound()
+						- lIssueInteger.getLowerBound()];
+				issueCounter[i] = new double[lIssueInteger.getUpperBound()
+						- lIssueInteger.getLowerBound()];
 				break;
 			default:
 				break;
 			}
-			i++;
 		}
 		if (utilitySpace.getReservationValue() != null)
 			reservationValue = utilitySpace.getReservationValue();
 	}
-
-	public void ReceiveMessage(Action opponentAction)
-	{
-	// Accept, EndNegotiation, IllegalAction, Offer
-	if (opponentAction instanceof Offer) {
-	history.add((Offer) opponentAction);
-	// update counters here
-	}
-	}
 	
+	private void updateCounters(Offer offer) {
+		Bid b = offer.getBid();
+		for(int i = 0; i < offerCounter.length; i++) {
+			Value v = null;
+			try {
+				v = b.getValue(i + 1);
+			} catch (Exception e) {				
+				e.printStackTrace();
+			}
+			switch (v.getType()) {
+			case DISCRETE:
+				ValueDiscrete vd = (ValueDiscrete) v;
+				break;
+			case REAL:
+				ValueReal vr = (ValueReal) v;
+				break;
+			case INTEGER:
+				ValueInteger vi = (ValueInteger) v;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	public void ReceiveMessage(Action opponentAction) {
+		// Accept, EndNegotiation, IllegalAction, Offer
+		if (opponentAction instanceof Offer) {
+			history.add((Offer) opponentAction);
+			// update counters here
+		}
+	}
+
 	@Override
 	public Action chooseAction() {
-		for(Offer offer : history){
+		for (Offer offer : history) {
 			setLT(timeline.getTime());
 		}
 		return null;
@@ -124,7 +149,8 @@ public class LCRTAgent extends Agent {
 	public void setLT(double time) {
 		double alpha = 1; // Linear, boulware or conceder
 		if (time < lambda) {
-			lT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda)) * Math.pow(time / lambda, alpha);
+			lT = uMax - (uMax - uMax * Math.pow(delta, 1 - lambda))
+					* Math.pow(time / lambda, alpha);
 		} else {
 			lT = uMax * Math.pow(delta, 1 - time);
 		}
