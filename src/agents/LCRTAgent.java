@@ -10,7 +10,9 @@ import negotiator.actions.Offer;
 public class LCRTAgent extends Agent {
 
 	private ArrayList<Offer> history = new ArrayList<Offer>();
-	private double lambda = 1.; // Lambda needs an initial value
+	private double lambda0 = .5; // Lambda needs an initial value
+	private double lambda = .0;
+	private double delta = .8;
 	
 	@Override
 	public Action chooseAction() {
@@ -32,8 +34,8 @@ public class LCRTAgent extends Agent {
 	
 	public void setLambda(double time) {
 		if(time == 0) 
-			lambda = lambda + Math.pow((1 - lambda), Math.pow(sigma, beta));
+			lambda = lambda0 + (1 - lambda) * Math.pow(delta, beta);
 		else
-			lambda = lambda + weight * Math.pow((1 - lambda), Math.pow(sigma, (time * gamma)));
+			lambda = lambda + weight * (1 - lambda) * Math.pow(sigma, (time * gamma));
 	}
 }
