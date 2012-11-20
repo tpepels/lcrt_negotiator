@@ -5,7 +5,9 @@ import java.util.List;
 
 import negotiator.Agent;
 import negotiator.Bid;
+import negotiator.actions.Accept;
 import negotiator.actions.Action;
+import negotiator.actions.EndNegotiation;
 import negotiator.actions.Offer;
 import negotiator.issue.Issue;
 import negotiator.issue.IssueDiscrete;
@@ -27,6 +29,10 @@ public class LCRTAgent extends Agent {
 	//
 	private int[][] offerCounter;
 	private double[][] issueCounter;
+	private Offer omegaBest = null; // To notify NB component of proposing this
+									// bid next time
+	private double ru0 = 0;
+	private double rut = 0;
 
 	/**
 	 * init is called when a next session starts with the same opponent.
@@ -97,23 +103,66 @@ public class LCRTAgent extends Agent {
 			// update counters here
 		}
 	}
-
-	@Override
 	public Action chooseAction() {
-		for (Offer offer : history) {
-			setLT(timeline.getTime());
+		Action action = null;
+		//TODO: Determine negotation outcome to offer (Tom's part)
+		Offer offer = null;
+		setLT(timeline.getTime());
+		//TODO: Set rut here? 
+		if(history.isEmpty()){
+			if(terminateCondition(history, timeline.getTime(), offer)){
+				action =  offer;
+			}else{
+				action = new EndNegotiation();
+			}
+		}else{
+			if(acceptCondition(history, timeline.getTime(), offer) &&
+					!terminateCondition(history, timeline.getTime(), offer)){
+				action = new Accept(getAgentID());
+			}else if(!acceptCondition(history, timeline.getTime(), offer) &&
+					terminateCondition(history, timeline.getTime(), offer)){
+				action = new EndNegotiation();
+			}else if(acceptCondition(history, timeline.getTime(), offer) &&
+					terminateCondition(history, timeline.getTime(), offer)){
+				if(getUtility(history.get(history.size() - 1).getBid()) > rut){
+					action = new Accept(getAgentID());
+				}else{
+					action = new EndNegotiation();
+				}
+			}else{
+				action = offer;
+			}
 		}
-		return null;
+		return action;
 	}
-
-	public boolean terminateCondition(List<Offer> history, double acceptThredhold, double time,
-			Offer offer, double reservation) {
+	public boolean terminateCondition(List<Offer> history, double time, Offer offer) {
 		return false;
 	}
 
-	public boolean acceptCondition(List<Offer> history, double acceptThredhold, double time,
-			Offer offer) {
-		return true;
+	public boolean acceptCondition(List<Offer> history, double time, Offer offer) {
+		Offer omega1 = history.get(history.size() - 1);
+		//
+		Offer bestOutcome = null;
+		double maxUtil = Double.MIN_VALUE;
+		for(Offer curOffer : history){
+			double curUtil = getUtility(curOffer.getBid());
+			if(curUtil > maxUtil){
+				maxUtil = curUtil;
+				bestOutcome = curOffer;
+			}
+		}
+		//
+		double omega1Util = getUtility(omega1.getBid());
+		double opponentOfferUtil = getUtility(offer.getBid());
+		double bestOutcomeUtil = getUtility(bestOutcome.getBid());
+		if (omega1Util > lambdaT || omega1Util > opponentOfferUtil) {
+			return true;
+		} else if (bestOutcomeUtil > lambdaT || bestOutcomeUtil > opponentOfferUtil) {
+			omegaBest = bestOutcome;
+			return false;
+		} else {
+			return false;
+		}
 	}
 
 	public Bid nextBid(Offer oppOff) {
