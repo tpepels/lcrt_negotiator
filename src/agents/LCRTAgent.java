@@ -116,35 +116,6 @@ public class LCRTAgent extends Agent {
 			}
 		}
 	}
-	
-	private Bid getOmegaMax() {
-		BidIterator iterator = new BidIterator(utilitySpace.getDomain());
-		ArrayList<Bid> bids = new ArrayList<Bid>();
-		ArrayList<Double> fOmega = new ArrayList<Double>();
-		double highestF = Double.MIN_VALUE;
-		Bid omegaMax = null;
-		while (iterator.hasNext()) {
-			Bid bid = iterator.next();
-			bids.add(bid);
-			double f = calculateFOmega(bid); 
-			fOmega.add(new Double(f));
-			if (f > highestF) {
-				highestF = f;
-				omegaMax = bid;
-			}
-		}
-		Random random = new Random();
-		if (random.nextDouble() >= epsilon) {
-			return omegaMax;
-		} else {
-			Bid bid = bids.get(random.nextInt(bids.size()));
-			while (bid.equals(omegaMax)) {
-				bid = bids.get(random.nextInt(bids.size()));
-			}
-			return bid;
-		}
-		
-	}
 
 	private double calculateFOmega(Bid b) {
 		double f = 0;
@@ -200,7 +171,7 @@ public class LCRTAgent extends Agent {
 			offer = omegaBest;
 			omegaBest = null;
 		}else{
-			offer = new Offer(this, nextBid(history.get(history.size() - 1)));
+			offer = new Offer(this, nextBid());
 		}
 		updateRut();
 		setLT(timeline.getTime());
@@ -264,24 +235,32 @@ public class LCRTAgent extends Agent {
 		}
 	}
 
-	public Bid nextBid(Offer oppOff) {
-		ArrayList<Issue> issues = utilitySpace.getDomain().getIssues();
-		for (Issue lIssue : issues) {
-			switch (lIssue.getType()) {
-			case DISCRETE:
-				IssueDiscrete lIssueDiscrete = (IssueDiscrete) lIssue;
-				break;
-			case REAL:
-				IssueReal lIssueReal = (IssueReal) lIssue;
-				break;
-			case INTEGER:
-				IssueInteger lIssueInteger = (IssueInteger) lIssue;
-				break;
-			default:
-				break;
+	public Bid nextBid() {
+		BidIterator iterator = new BidIterator(utilitySpace.getDomain());
+		ArrayList<Bid> bids = new ArrayList<Bid>();
+		ArrayList<Double> fOmega = new ArrayList<Double>();
+		double highestF = Double.MIN_VALUE;
+		Bid omegaMax = null;
+		while (iterator.hasNext()) {
+			Bid bid = iterator.next();
+			bids.add(bid);
+			double f = calculateFOmega(bid); 
+			fOmega.add(new Double(f));
+			if (f > highestF) {
+				highestF = f;
+				omegaMax = bid;
 			}
 		}
-		return null;
+		Random random = new Random();
+		if (random.nextDouble() >= epsilon) {
+			return omegaMax;
+		} else {
+			Bid bid = bids.get(random.nextInt(bids.size()));
+			while (bid.equals(omegaMax)) {
+				bid = bids.get(random.nextInt(bids.size()));
+			}
+			return bid;
+		}
 	}
 
 	private final double beta = 1., gamma = 1., weight = 1.;
