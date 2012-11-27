@@ -25,7 +25,7 @@ public class LCRTAgent extends Agent {
 	private ArrayList<Offer> history = new ArrayList<Offer>();
 	private ArrayList<Issue> issues;
 	private double lambda0 = .5; // Lambda needs an initial value
-	private double lambda = .0, lambdaT = 0, lT = 0; // Acceptance treshold of agent at time t
+	private double lambda = .0, lT = 0; // Acceptance treshold of agent at time t
 	private double delta = .8, uMax = 1;
 	private double epsilon = 0.01;
 	private double eta = 0.9; 
@@ -184,7 +184,7 @@ public class LCRTAgent extends Agent {
 		updateRut();
 		 
 		if(history.isEmpty()){
-			if(terminateCondition(history, timeline.getTime(), offer)){
+			if(!terminateCondition(history, timeline.getTime(), offer)){
 				action =  offer;
 			}else{
 				action = new EndNegotiation();
@@ -220,7 +220,7 @@ public class LCRTAgent extends Agent {
 		Offer omega1 = history.get(history.size() - 1);
 		//
 		Offer bestOutcome = null;
-		double maxUtil = Double.MIN_VALUE;
+		double maxUtil = Double.NEGATIVE_INFINITY;
 		for(Offer curOffer : history){
 			double curUtil = getUtility(curOffer.getBid());
 			if(curUtil > maxUtil){
@@ -232,9 +232,9 @@ public class LCRTAgent extends Agent {
 		double omega1Util = getUtility(omega1.getBid());
 		double opponentOfferUtil = getUtility(offer.getBid());
 		double bestOutcomeUtil = getUtility(bestOutcome.getBid());
-		if (omega1Util > lambdaT || omega1Util > opponentOfferUtil) {
+		if (omega1Util > lT || omega1Util > opponentOfferUtil) {
 			return true;
-		} else if (bestOutcomeUtil > lambdaT || bestOutcomeUtil > opponentOfferUtil) {
+		} else if (bestOutcomeUtil > lT || bestOutcomeUtil > opponentOfferUtil) {
 			omegaBest = bestOutcome;
 			return false;
 		} else {
@@ -246,7 +246,7 @@ public class LCRTAgent extends Agent {
 		BidIterator iterator = new BidIterator(utilitySpace.getDomain());
 		ArrayList<Bid> bids = new ArrayList<Bid>();
 		ArrayList<Double> fOmega = new ArrayList<Double>();
-		double highestF = Double.MIN_VALUE;
+		double highestF = Double.NEGATIVE_INFINITY;
 		Bid omegaMax = null;
 		while (iterator.hasNext()) {
 			Bid bid = iterator.next();
