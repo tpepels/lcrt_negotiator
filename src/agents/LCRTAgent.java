@@ -71,7 +71,7 @@ public class LCRTAgent extends Agent {
 			}
 		}
 		if (utilitySpace.getReservationValue() != null)
-			reservationValue = utilitySpace.getReservationValue();
+			eta = utilitySpace.getReservationValue();
 	}
 	
 	private void updateCounters(Offer offer) {
