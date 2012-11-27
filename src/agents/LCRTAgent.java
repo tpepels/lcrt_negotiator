@@ -109,7 +109,7 @@ public class LCRTAgent extends Agent {
 		// Accept, EndNegotiation, IllegalAction, Offer
 		if (opponentAction instanceof Offer) {
 			history.add((Offer) opponentAction);
-			// update counters here
+			updateCounters((Offer)opponentAction);
 		}
 	}
 	public Action chooseAction() {
