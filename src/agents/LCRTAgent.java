@@ -29,7 +29,6 @@ public class LCRTAgent extends Agent {
 	private double delta = .8, uMax = 1;
 	private double epsilon = 0.01;
 	private double eta = 0.9; 
-	private double reservationValue = 0;
 	//
 	private int[][] offerCounter;
 	private double[][] issueCounter;
@@ -38,6 +37,14 @@ public class LCRTAgent extends Agent {
 	private double ru0 = 0;
 	private double rut = 0;
 
+	public static String getVersion(){
+		return "1";
+	}
+	
+	public String getName(){
+		return "ABINES";
+	}
+	
 	/**
 	 * init is called when a next session starts with the same opponent.
 	 */
@@ -73,7 +80,7 @@ public class LCRTAgent extends Agent {
 			i++;
 		}
 		if (utilitySpace.getReservationValue() != null)
-			reservationValue = utilitySpace.getReservationValue();
+			rut = utilitySpace.getReservationValue();
 	}
 	
 	private void updateCounters(Offer offer) {
@@ -166,6 +173,7 @@ public class LCRTAgent extends Agent {
 	public Action chooseAction() {
 		Action action = null;
 		Offer offer;
+		setLT(timeline.getTime());
 		//Determine negotation outcome to offer (Tom's part)
 		if(omegaBest != null){
 			offer = omegaBest;
@@ -174,7 +182,6 @@ public class LCRTAgent extends Agent {
 			offer = new Offer(this, nextBid());
 		}
 		updateRut();
-		setLT(timeline.getTime());
 		 
 		if(history.isEmpty()){
 			if(terminateCondition(history, timeline.getTime(), offer)){
