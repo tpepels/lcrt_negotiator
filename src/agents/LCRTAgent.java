@@ -114,10 +114,17 @@ public class LCRTAgent extends Agent {
 	}
 	public Action chooseAction() {
 		Action action = null;
-		//TODO: Determine negotation outcome to offer (Tom's part)
-		Offer offer = null;
+		Offer offer;
+		//Determine negotation outcome to offer (Tom's part)
+		if(omegaBest != null){
+			offer = omegaBest;
+			omegaBest = null;
+		}else{
+			offer = new Offer(this, nextBid(history.get(history.size() - 1)));
+		}
+		updateRut();
 		setLT(timeline.getTime());
-		//TODO: Set rut here? 
+		 
 		if(history.isEmpty()){
 			if(terminateCondition(history, timeline.getTime(), offer)){
 				action =  offer;
@@ -145,6 +152,9 @@ public class LCRTAgent extends Agent {
 		return action;
 	}
 	public boolean terminateCondition(List<Offer> history, double time, Offer offer) {
+		if(ru0 > lT || ru0 > getUtility(offer.getBid())) {
+			return true;
+		}
 		return false;
 	}
 
@@ -211,6 +221,14 @@ public class LCRTAgent extends Agent {
 					* Math.pow(time / lambda, alpha);
 		} else {
 			lT = uMax * Math.pow(delta, 1 - time);
+		}
+	}
+	
+	public void updateRut(){
+		if(rut == 0){
+			rut = ru0 * delta;
+		}else{
+			rut *= delta; 
 		}
 	}
 }
