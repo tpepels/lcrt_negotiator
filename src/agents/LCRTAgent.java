@@ -28,6 +28,7 @@ public class LCRTAgent extends Agent {
 	private double lambda = .0, lambdaT = 0, lT = 0; // Acceptance treshold of agent at time t
 	private double delta = .8, uMax = 1, eta = 0.9; // Maximum utility
 	private double epsilon = 0.01;
+	private double discountFactor = 0.9; 
 	//
 	private double reservationValue = 0;
 	//
@@ -108,6 +109,14 @@ public class LCRTAgent extends Agent {
 		}
 	}
 	
+	private void updateIssueCounters() {
+		for (int i = 0; i < offerCounter.length; i++) {
+			for (int j = 0; j < offerCounter[i].length; j++) {
+				issueCounter[i][j] = issueCounter[i][j] + Math.pow(discountFactor, offerCounter[i][j]); 
+			}
+		}
+	}
+	
 	private Bid getOmegaMax() {
 		BidIterator iterator = new BidIterator(utilitySpace.getDomain());
 		ArrayList<Bid> bids = new ArrayList<Bid>();
@@ -179,6 +188,7 @@ public class LCRTAgent extends Agent {
 			history.add((Offer) opponentAction);
 			// update counters here
 			updateCounters((Offer) opponentAction);
+			updateIssueCounters();
 		}
 	}
 	
