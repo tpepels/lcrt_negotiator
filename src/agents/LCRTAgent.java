@@ -21,6 +21,7 @@ import negotiator.issue.ValueReal;
 public class LCRTAgent extends Agent {
 
 	private ArrayList<Offer> history = new ArrayList<Offer>();
+	private ArrayList<Issue> issues;
 	private double lambda0 = .5; // Lambda needs an initial value
 	private double lambda = .0, lambdaT = 0, lT = 0; // Acceptance treshold of agent at time t
 	private double delta = .8, uMax = 1, eta = 0.9; // Maximum utility
@@ -42,7 +43,7 @@ public class LCRTAgent extends Agent {
 		int numIssues = utilitySpace.getDomain().getIssues().size();
 		offerCounter = new int[numIssues][];
 		issueCounter = new double[numIssues][];
-		ArrayList<Issue> issues = utilitySpace.getDomain().getIssues();
+		issues = utilitySpace.getDomain().getIssues();
 		for (Issue iss : issues) {
 			int i = iss.getNumber() - 1;
 			switch (iss.getType()) {
@@ -74,6 +75,7 @@ public class LCRTAgent extends Agent {
 	private void updateCounters(Offer offer) {
 		Bid b = offer.getBid();
 		for(int i = 0; i < offerCounter.length; i++) {
+			Issue iss = (Issue) utilitySpace.getDomain().getObjective(i);
 			Value v = null;
 			try {
 				v = b.getValue(i + 1);
@@ -83,12 +85,19 @@ public class LCRTAgent extends Agent {
 			switch (v.getType()) {
 			case DISCRETE:
 				ValueDiscrete vd = (ValueDiscrete) v;
+				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
+				offerCounter[iss.getNumber() - 1][lIssueDiscrete.getValueIndex(vd.getValue())]++;
 				break;
 			case REAL:
 				ValueReal vr = (ValueReal) v;
+				IssueReal ireal = (IssueReal) iss;
+				double binsize = (ireal.getUpperBound() - ireal.getLowerBound()) / (double)ireal.getNumberOfDiscretizationSteps();
+				double bin = vr.getValue() / binsize;
+				offerCounter[iss.getNumber() - 1][(int)bin]++;
 				break;
 			case INTEGER:
 				ValueInteger vi = (ValueInteger) v;
+				offerCounter[iss.getNumber() - 1][vi.getValue()]++;
 				break;
 			default:
 				break;

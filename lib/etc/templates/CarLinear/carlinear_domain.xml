@@ -1,0 +1,28 @@
+<negotiation_template> 
+<utility_space number_of_issues="3"> 
+<objective index="0" description="" name="carlinear_domain" type="objective" etype="objective"> 
+<issue index="1" name="Color" vtype="discrete" type="discrete" etype="discrete"> 
+<item index="1" value="Red"> 
+</item> 
+<item index="2" value="Blue"> 
+</item> 
+<item index="3" value="Green"> 
+</item> 
+<item index="4" value="Yellow"> 
+</item> 
+</issue> 
+<issue index="2" name="Price" vtype="integer" type="integer" etype="integer"> 
+<range lowerbound="500" upperbound="700"> 
+</range> 
+</issue> 
+<issue index="3" name="Speakers" vtype="discrete" type="discrete" etype="discrete"> 
+<item index="1" value="Bad quality"> 
+</item> 
+<item index="2" value="Decent quality"> 
+</item> 
+<item index="3" value="High quality"> 
+</item> 
+</issue> 
+</objective> 
+</utility_space> 
+</negotiation_template> 

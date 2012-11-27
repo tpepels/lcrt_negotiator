@@ -1,0 +1,38 @@
+<utility_space> 
+<objective index="0" description="" name="carlinear_domain" type="objective" etype="objective"> 
+<issue index="1" name="Color" vtype="discrete" type="discrete" etype="discrete"> 
+<item index="1" value="Red" evaluation="25"> 
+</item> 
+<item index="2" value="Blue" evaluation="50"> 
+</item> 
+<item index="3" value="Green" evaluation="10"> 
+</item> 
+<item index="4" value="Yellow" evaluation="15"> 
+</item> 
+</issue> 
+<issue index="2" name="Price" vtype="integer" type="integer" etype="integer"> 
+<range lowerbound="500" upperbound="700"> 
+</range> 
+<evaluator slope="0.0040" offset="0.2" ftype="linear"> 
+</evaluator> 
+</issue> 
+<issue index="3" name="Speakers" vtype="discrete" type="discrete" etype="discrete"> 
+<item index="1" value="Bad quality" evaluation="5"> 
+</item> 
+<item index="2" value="Decent quality" evaluation="25"> 
+</item> 
+<item index="3" value="High quality" evaluation="5"> 
+</item> 
+</issue> 
+<weight index="1" value="0.19225141016444233"> 
+</weight> 
+<weight index="2" value="0.7297434255232572"> 
+</weight> 
+<weight index="3" value="0.07800516431230048"> 
+</weight> 
+</objective> 
+<discount_factor value="0.2"> 
+</discount_factor> 
+<reservation value="0.0"> 
+</reservation> 
+</utility_space> 
