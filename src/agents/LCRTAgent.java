@@ -47,8 +47,8 @@ public class LCRTAgent extends Agent {
 		offerCounter = new int[numIssues][];
 		issueCounter = new double[numIssues][];
 		issues = utilitySpace.getDomain().getIssues();
+		int i = 0;
 		for (Issue iss : issues) {
-			int i = iss.getNumber() - 1;
 			switch (iss.getType()) {
 			case DISCRETE:
 				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
@@ -70,6 +70,7 @@ public class LCRTAgent extends Agent {
 			default:
 				break;
 			}
+			i++;
 		}
 		if (utilitySpace.getReservationValue() != null)
 			reservationValue = utilitySpace.getReservationValue();
@@ -78,10 +79,10 @@ public class LCRTAgent extends Agent {
 	private void updateCounters(Offer offer) {
 		Bid b = offer.getBid();
 		for(int i = 0; i < offerCounter.length; i++) {
-			Issue iss = (Issue) utilitySpace.getDomain().getObjective(i);
+			Issue iss = issues.get(i);
 			Value v = null;
 			try {
-				v = b.getValue(i + 1);
+				v = b.getValue(iss.getNumber());
 			} catch (Exception e) {				
 				e.printStackTrace();
 			}
@@ -89,18 +90,18 @@ public class LCRTAgent extends Agent {
 			case DISCRETE:
 				ValueDiscrete vd = (ValueDiscrete) v;
 				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
-				offerCounter[iss.getNumber() - 1][lIssueDiscrete.getValueIndex(vd.getValue())]++;
+				offerCounter[i][lIssueDiscrete.getValueIndex(vd.getValue())]++;
 				break;
 			case REAL:
 				ValueReal vr = (ValueReal) v;
 				IssueReal ireal = (IssueReal) iss;
 				double binsize = (ireal.getUpperBound() - ireal.getLowerBound()) / (double)ireal.getNumberOfDiscretizationSteps();
 				double bin = vr.getValue() / binsize;
-				offerCounter[iss.getNumber() - 1][(int)bin]++;
+				offerCounter[i][(int)bin]++;
 				break;
 			case INTEGER:
 				ValueInteger vi = (ValueInteger) v;
-				offerCounter[iss.getNumber() - 1][vi.getValue()]++;
+				offerCounter[i][vi.getValue()]++;
 				break;
 			default:
 				break;
@@ -120,10 +121,10 @@ public class LCRTAgent extends Agent {
 		double f = 0;
 		
 		for (int i = 0; i < offerCounter.length; i++) {
-			Issue iss = (Issue) utilitySpace.getDomain().getObjective(i);
+			Issue iss = (Issue) issues.get(i);
 			Value v = null;
 			try {
-				v = b.getValue(i + 1);
+				v = b.getValue(iss.getNumber());
 			} catch (Exception e) {				
 				e.printStackTrace();
 			}
@@ -131,18 +132,18 @@ public class LCRTAgent extends Agent {
 			case DISCRETE:
 				ValueDiscrete vd = (ValueDiscrete) v;
 				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
-				f += issueCounter[iss.getNumber() - 1][lIssueDiscrete.getValueIndex(vd.getValue())];
+				f += issueCounter[i][lIssueDiscrete.getValueIndex(vd.getValue())];
 				break;
 			case REAL:
 				ValueReal vr = (ValueReal) v;
 				IssueReal ireal = (IssueReal) iss;
 				double binsize = (ireal.getUpperBound() - ireal.getLowerBound()) / (double)ireal.getNumberOfDiscretizationSteps();
 				double bin = vr.getValue() / binsize;
-				f += issueCounter[iss.getNumber() - 1][(int)bin];
+				f += issueCounter[i][(int)bin];
 				break;
 			case INTEGER:
 				ValueInteger vi = (ValueInteger) v;
-				f += issueCounter[iss.getNumber() - 1][vi.getValue()];
+				f += issueCounter[i][vi.getValue()];
 				break;
 			default:
 				break;
