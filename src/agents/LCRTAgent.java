@@ -29,6 +29,7 @@ public class LCRTAgent extends Agent {
 	private double delta = .8, uMax = 1;
 	private double epsilon = 0.01;
 	private double eta = 0.9; 
+	private double reservationValue = 0;
 	//
 	private int[][] offerCounter;
 	private double[][] issueCounter;
@@ -71,7 +72,7 @@ public class LCRTAgent extends Agent {
 			}
 		}
 		if (utilitySpace.getReservationValue() != null)
-			eta = utilitySpace.getReservationValue();
+			reservationValue = utilitySpace.getReservationValue();
 	}
 	
 	private void updateCounters(Offer offer) {
