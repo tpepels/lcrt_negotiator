@@ -2,9 +2,11 @@ package agents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import negotiator.Agent;
 import negotiator.Bid;
+import negotiator.BidIterator;
 import negotiator.actions.Accept;
 import negotiator.actions.Action;
 import negotiator.actions.EndNegotiation;
@@ -25,6 +27,7 @@ public class LCRTAgent extends Agent {
 	private double lambda0 = .5; // Lambda needs an initial value
 	private double lambda = .0, lambdaT = 0, lT = 0; // Acceptance treshold of agent at time t
 	private double delta = .8, uMax = 1, eta = 0.9; // Maximum utility
+	private double epsilon = 0.01;
 	//
 	private double reservationValue = 0;
 	//
@@ -104,14 +107,81 @@ public class LCRTAgent extends Agent {
 			}
 		}
 	}
+	
+	private Bid getOmegaMax() {
+		BidIterator iterator = new BidIterator(utilitySpace.getDomain());
+		ArrayList<Bid> bids = new ArrayList<Bid>();
+		ArrayList<Double> fOmega = new ArrayList<Double>();
+		double highestF = Double.MIN_VALUE;
+		Bid omegaMax = null;
+		while (iterator.hasNext()) {
+			Bid bid = iterator.next();
+			bids.add(bid);
+			double f = calculateFOmega(bid); 
+			fOmega.add(new Double(f));
+			if (f > highestF) {
+				highestF = f;
+				omegaMax = bid;
+			}
+		}
+		Random random = new Random();
+		if (random.nextDouble() >= epsilon) {
+			return omegaMax;
+		} else {
+			Bid bid = bids.get(random.nextInt(bids.size()));
+			while (bid.equals(omegaMax)) {
+				bid = bids.get(random.nextInt(bids.size()));
+			}
+			return bid;
+		}
+		
+	}
 
+	private double calculateFOmega(Bid b) {
+		double f = 0;
+		
+		for (int i = 0; i < offerCounter.length; i++) {
+			Issue iss = (Issue) utilitySpace.getDomain().getObjective(i);
+			Value v = null;
+			try {
+				v = b.getValue(i + 1);
+			} catch (Exception e) {				
+				e.printStackTrace();
+			}
+			switch (v.getType()) {
+			case DISCRETE:
+				ValueDiscrete vd = (ValueDiscrete) v;
+				IssueDiscrete lIssueDiscrete = (IssueDiscrete) iss;
+				f += issueCounter[iss.getNumber() - 1][lIssueDiscrete.getValueIndex(vd.getValue())];
+				break;
+			case REAL:
+				ValueReal vr = (ValueReal) v;
+				IssueReal ireal = (IssueReal) iss;
+				double binsize = (ireal.getUpperBound() - ireal.getLowerBound()) / (double)ireal.getNumberOfDiscretizationSteps();
+				double bin = vr.getValue() / binsize;
+				f += issueCounter[iss.getNumber() - 1][(int)bin];
+				break;
+			case INTEGER:
+				ValueInteger vi = (ValueInteger) v;
+				f += issueCounter[iss.getNumber() - 1][vi.getValue()];
+				break;
+			default:
+				break;
+			}
+		}
+		
+		return f;
+	}
+	
 	public void ReceiveMessage(Action opponentAction) {
 		// Accept, EndNegotiation, IllegalAction, Offer
 		if (opponentAction instanceof Offer) {
 			history.add((Offer) opponentAction);
 			// update counters here
+			updateCounters((Offer) opponentAction);
 		}
 	}
+	
 	public Action chooseAction() {
 		Action action = null;
 		Offer offer;
